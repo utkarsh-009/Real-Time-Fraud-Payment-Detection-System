@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.dto.TransactionRequestDTO;
 import org.example.dto.TransactionResponseDTO;
 import org.example.entity.Transaction;
+import org.example.event.TransactionEvent;
+import org.example.kafka.TransactionProducer;
 import org.example.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,8 @@ public class TransactionServiceImpl implements TransactionService{
 
     private final TransactionRepository txnRepository;
 
+    private final TransactionProducer producer;
+
     @Override
     public TransactionResponseDTO createTxn(TransactionRequestDTO txnReq) {
         Transaction txnResponse = Transaction.builder()
@@ -32,6 +36,19 @@ public class TransactionServiceImpl implements TransactionService{
                 .build();
 
         Transaction savedTxn = txnRepository.save(txnResponse);
+
+        TransactionEvent event =
+                TransactionEvent.builder()
+                        .transactionId(savedTxn.getTxnId())
+                        .userId(savedTxn.getUserId())
+                        .amount(savedTxn.getAmount())
+                        .merchant(savedTxn.getMerchant())
+                        .location(savedTxn.getLocation())
+                        .deviceId(savedTxn.getDeviceId())
+                        .createdAt(savedTxn.getCreatedDateTime())
+                        .build();
+
+        producer.publishTransaction(event);
         return mapTxnToResponse(savedTxn);
     }
 
