@@ -1,6 +1,6 @@
-package org.example.kafka;
+package com.transaction.gateway.kafka;
 
-import org.example.event.TransactionEvent;
+import com.transaction.gateway.event.TransactionEvent;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 

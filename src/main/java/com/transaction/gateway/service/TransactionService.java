@@ -1,8 +1,7 @@
-package org.example.service;
+package com.transaction.gateway.service;
 
-import org.example.dto.TransactionRequestDTO;
-import org.example.dto.TransactionResponseDTO;
-import org.example.entity.Transaction;
+import com.transaction.gateway.dto.TransactionRequestDTO;
+import com.transaction.gateway.dto.TransactionResponseDTO;
 
 import java.util.List;
 

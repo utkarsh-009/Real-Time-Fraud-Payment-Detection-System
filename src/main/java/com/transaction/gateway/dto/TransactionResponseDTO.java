@@ -1,15 +1,16 @@
-package org.example.event;
+package com.transaction.gateway.dto;
 
-import lombok.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+// Data for Server's response
+@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class TransactionEvent {
+public class TransactionResponseDTO {
 
     private String transactionId;
 

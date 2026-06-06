@@ -1,6 +1,6 @@
-package org.example.repository;
+package com.transaction.gateway.repository;
 
-import org.example.entity.Transaction;
+import com.transaction.gateway.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {

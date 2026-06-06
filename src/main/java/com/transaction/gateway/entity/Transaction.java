@@ -1,4 +1,4 @@
-package org.example.entity;
+package com.transaction.gateway.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

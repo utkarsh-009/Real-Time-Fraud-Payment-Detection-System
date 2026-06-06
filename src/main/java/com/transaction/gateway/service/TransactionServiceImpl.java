@@ -1,17 +1,16 @@
-package org.example.service;
+package com.transaction.gateway.service;
 
 
 import lombok.RequiredArgsConstructor;
-import org.example.dto.TransactionRequestDTO;
-import org.example.dto.TransactionResponseDTO;
-import org.example.entity.Transaction;
-import org.example.event.TransactionEvent;
-import org.example.kafka.TransactionProducer;
-import org.example.repository.TransactionRepository;
+import com.transaction.gateway.dto.TransactionRequestDTO;
+import com.transaction.gateway.dto.TransactionResponseDTO;
+import com.transaction.gateway.entity.Transaction;
+import com.transaction.gateway.event.TransactionEvent;
+import com.transaction.gateway.kafka.TransactionProducer;
+import com.transaction.gateway.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 

@@ -1,7 +1,7 @@
-package org.example.kafka;
+package com.transaction.gateway.kafka;
 
 import lombok.RequiredArgsConstructor;
-import org.example.event.TransactionEvent;
+import com.transaction.gateway.event.TransactionEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 

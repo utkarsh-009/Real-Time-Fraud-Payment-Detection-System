@@ -1,10 +1,10 @@
-package org.example.controller;
+package com.transaction.gateway.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.dto.TransactionRequestDTO;
-import org.example.dto.TransactionResponseDTO;
-import org.example.service.TransactionService;
+import com.transaction.gateway.dto.TransactionRequestDTO;
+import com.transaction.gateway.dto.TransactionResponseDTO;
+import com.transaction.gateway.service.TransactionService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
