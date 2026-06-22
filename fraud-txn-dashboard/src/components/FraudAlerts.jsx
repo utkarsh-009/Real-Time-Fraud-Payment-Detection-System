@@ -6,12 +6,14 @@ function FraudAlerts({ alerts }) {
             <h2>Live Fraud Alerts</h2>
 
             {alerts.length === 0 && (
-                <p>No alerts yet...</p>
+                <p style={{ color: "#666", fontStyle: "italic" }}>
+                    Waiting for fraud alerts... Make a transaction to see alerts here.
+                </p>
             )}
 
-            {alerts.map((alert, index) => (
+            {alerts.map((alert) => (
                 <div
-                    key={index}
+                    key={alert.transactionId}
                     style={{
                         border: "1px solid #ccc",
                         marginBottom: "10px",
