@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class FraudAnalysisEvent {
-    private String txnId;
+    private String transactionId;
     private String userId;
     private Double riskScore;
     private Boolean isFraud;

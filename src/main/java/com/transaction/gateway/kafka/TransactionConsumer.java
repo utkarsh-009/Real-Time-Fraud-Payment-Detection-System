@@ -1,13 +1,12 @@
 package com.transaction.gateway.kafka;
 
-import com.transaction.gateway.event.TransactionEvent;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class TransactionConsumer {
-    @KafkaListener(topics = "transactions", groupId = "fraud-dtn-grp")
-    public void consume(TransactionEvent event) {
-        System.out.println("Received Event: " + event);
-    }
+    /*
+     * The Python prediction engine is the consumer for the transactions topic.
+     * Keeping a Java listener here creates a second, unnecessary consumer that can
+     * block on older records whose JSON shape does not match TransactionEvent.
+     */
 }

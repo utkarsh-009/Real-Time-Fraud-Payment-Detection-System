@@ -10,7 +10,7 @@ import org.springframework.web.socket.config.annotation.*;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     /*
     WEBSOCKET FLOW:
-        Frontend connects: ws://localhost:8083/ws-alerts
+        Frontend connects: http://localhost:8081/ws-alerts
         Then subscribes: "/topic/fraud-alerts"
     */
 

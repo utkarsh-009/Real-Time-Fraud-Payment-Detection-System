@@ -1,83 +1,43 @@
-import React from "react";
 import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    Tooltip,
-    CartesianGrid
+    Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer,
+    Tooltip, XAxis, YAxis
 } from "recharts";
 
+const ChartTooltip = ({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+    const point = payload[0].payload;
+    return <div className="chart-tooltip"><span>Transaction</span><strong>{point.transactionId}</strong><div><span>Risk score</span><b>{Number(point.riskScore).toFixed(2)}</b></div></div>;
+};
+
 function FraudCharts({ data }) {
+    const chronologicalData = [...data].reverse();
     return (
-        <div style={{ padding: "0", width: "100%" }}>
-            <h2 style={{
-                color: "#333",
-                fontSize: "24px",
-                fontWeight: "600",
-                marginTop: "0",
-                marginBottom: "25px",
-                textAlign: "center"
-            }}>
-                📊 Risk Score Trend Analysis
-            </h2>
-
+        <section className="panel chart-panel" id="risk-analysis">
+            <div className="panel-heading">
+                <div><h2>Risk score activity</h2><p>Real-time model confidence across recent transactions</p></div>
+                <div className="chart-legend"><span><i className="line-key"/>Risk score</span><span><i className="dash-key"/>Critical threshold</span></div>
+            </div>
             {data.length === 0 ? (
-                <p style={{ 
-                    color: "#999", 
-                    fontStyle: "italic",
-                    textAlign: "center",
-                    fontSize: "16px",
-                    padding: "40px"
-                }}>
-                    Waiting for transaction data... Chart will appear once data is received.
-                </p>
+                <div className="chart-empty" aria-label="Waiting for transaction data">
+                    <div className="chart-placeholder"><i/><i/><i/><i/><i/><i/></div>
+                    <p>Chart populates as transactions arrive</p>
+                </div>
             ) : (
-                <div style={{ display: "flex", justifyContent: "center", overflowX: "auto" }}>
-                    <LineChart
-                        width={Math.max(800, data.length * 100)}
-                        height={400}
-                        data={data}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
-
-                        <XAxis 
-                            dataKey="transactionId" 
-                            angle={-45}
-                            textAnchor="end"
-                            height={80}
-                            style={{ fontSize: "12px" }}
-                        />
-
-                        <YAxis 
-                            domain={[0, 1]}
-                            style={{ fontSize: "12px" }}
-                            label={{ value: 'Risk Score', angle: -90, position: 'insideLeft' }}
-                        />
-
-                        <Tooltip 
-                            contentStyle={{
-                                backgroundColor: "#f9f9f9",
-                                border: "1px solid #ddd",
-                                borderRadius: "8px",
-                                padding: "10px"
-                            }}
-                            formatter={(value) => value.toFixed(2)}
-                        />
-
-                        <Line
-                            type="monotone"
-                            dataKey="riskScore"
-                            stroke="#ff4d4f"
-                            strokeWidth={3}
-                            dot={{ fill: "#ff4d4f", r: 5 }}
-                            activeDot={{ r: 7 }}
-                        />
-                    </LineChart>
+                <div className="chart-container">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chronologicalData} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
+                            <defs><linearGradient id="riskGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#6c7cff" stopOpacity=".32"/><stop offset="100%" stopColor="#6c7cff" stopOpacity="0"/></linearGradient></defs>
+                            <CartesianGrid vertical={false} stroke="#283349" strokeDasharray="3 6"/>
+                            <XAxis dataKey="receivedAt" tick={{ fill: "#758198", fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={40}/>
+                            <YAxis domain={[0, 1]} ticks={[0, .25, .5, .75, 1]} tick={{ fill: "#758198", fontSize: 11 }} axisLine={false} tickLine={false}/>
+                            <ReferenceLine y={.7} stroke="#f05d6d" strokeDasharray="5 5"/>
+                            <Tooltip content={<ChartTooltip/>} cursor={{ stroke: "#6876f5", strokeDasharray: "4 4" }}/>
+                            <Area type="monotone" dataKey="riskScore" stroke="#7c89ff" strokeWidth={2.5} fill="url(#riskGradient)" activeDot={{ r: 5, fill: "#9ba5ff", stroke: "#111827", strokeWidth: 3 }} dot={false}/>
+                        </AreaChart>
+                    </ResponsiveContainer>
                 </div>
             )}
-        </div>
+        </section>
     );
 }
 

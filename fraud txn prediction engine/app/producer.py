@@ -2,9 +2,11 @@ from kafka import KafkaProducer
 from kafka.errors import KafkaError
 import json
 import logging
+import os
 import time
 
 logger = logging.getLogger(__name__)
+bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 
 # Initialize Kafka Producer with retry logic
 max_retries = 3
@@ -14,7 +16,7 @@ producer = None
 while retry_count < max_retries:
     try:
         producer = KafkaProducer(
-            bootstrap_servers="localhost:9092",
+            bootstrap_servers=bootstrap_servers,
             value_serializer=lambda x: json.dumps(x).encode("utf-8"),
             retries=5,
             acks='all',

@@ -1,160 +1,116 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FraudSummary from "./components/FraudSummary";
 import FraudCharts from "./components/FraudCharts";
+import FraudAlerts from "./components/FraudAlerts";
 import { connectWebSocket, disconnectWebSocket } from "./services/websocket";
+import "./App.css";
 
-// Mock initial data
-const INITIAL_ALERTS = [
-    { transactionId: "TXN-00001", userId: "USER-101", riskScore: 0.92, isFraud: true },
-    { transactionId: "TXN-00002", userId: "USER-102", riskScore: 0.15, isFraud: false },
-    { transactionId: "TXN-00003", userId: "USER-103", riskScore: 0.78, isFraud: true },
-    { transactionId: "TXN-00004", userId: "USER-104", riskScore: 0.22, isFraud: false },
-    { transactionId: "TXN-00005", userId: "USER-105", riskScore: 0.85, isFraud: true },
-    { transactionId: "TXN-00006", userId: "USER-106", riskScore: 0.10, isFraud: false },
-    { transactionId: "TXN-00007", userId: "USER-107", riskScore: 0.65, isFraud: true },
-    // { transactionId: "TXN-00008", userId: "USER-108", riskScore: 0.30, isFraud: false },
-];
-
-const INITIAL_CHART_DATA = INITIAL_ALERTS.map(alert => ({
-    transactionId: alert.transactionId,
-    riskScore: alert.riskScore
-}));
+const Icon = ({ name, size = 20 }) => {
+    const paths = {
+        grid: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
+        activity: <><path d="M3 12h4l2.5-7 5 14 2.5-7h4"/><path d="M3 4v16h18"/></>,
+        alert: <><path d="M12 3 2.8 19a1.4 1.4 0 0 0 1.2 2h16a1.4 1.4 0 0 0 1.2-2L12 3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></>,
+        search: <><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></>,
+        bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></>,
+        menu: <><path d="M4 7h16M4 12h16M4 17h16"/></>,
+        shield: <><path d="M12 3 20 6v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/></>,
+        chevron: <path d="m9 18 6-6-6-6"/>,
+    };
+    return <svg className="icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+};
 
 function App() {
-
-    const [alerts, setAlerts] = useState(INITIAL_ALERTS);
-    const [chartData, setChartData] = useState(INITIAL_CHART_DATA);
+    const [alerts, setAlerts] = useState([]);
+    const [chartData, setChartData] = useState([]);
     const [connectionStatus, setConnectionStatus] = useState("connecting");
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const MAX_ALERTS = 100;
     const MAX_CHART_DATA = 100;
 
     useEffect(() => {
-        let isConnected = false;
-
         connectWebSocket(
             (data) => {
-                isConnected = true;
+                const event = {
+                    ...data,
+                    eventId: `${data.transactionId}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                    receivedAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+                };
                 setConnectionStatus("connected");
-                console.log("Received:", data);
-
-                // update alerts list with limit
-                setAlerts((prev) => {
-                    const updated = [data, ...prev];
-                    return updated.slice(0, MAX_ALERTS);
-                });
-
-                // update chart data with limit
-                setChartData((prev) => {
-                    const updated = [
-                        ...prev,
-                        {
-                            transactionId: data.transactionId,
-                            riskScore: data.riskScore
-                        }
-                    ];
-                    return updated.slice(0, MAX_CHART_DATA);
-                });
+                setAlerts((prev) => [event, ...prev].slice(0, MAX_ALERTS));
+                setChartData((prev) => [{
+                    eventId: event.eventId,
+                    transactionId: event.transactionId,
+                    transactionLabel: `${event.transactionId} ${event.receivedAt}`,
+                    receivedAt: event.receivedAt,
+                    riskScore: event.riskScore
+                }, ...prev].slice(0, MAX_CHART_DATA));
             },
-            (error) => {
-                setConnectionStatus("error");
-                console.error("WebSocket Error:", error);
-            }
+            () => setConnectionStatus("error"),
+            () => setConnectionStatus("connected")
         );
-
-        // Cleanup function on unmount
-        return () => {
-            disconnectWebSocket();
-        };
-
+        return () => disconnectWebSocket();
     }, []);
 
+    const dateLabel = useMemo(() => new Intl.DateTimeFormat("en-US", {
+        weekday: "long", month: "long", day: "numeric"
+    }).format(new Date()), []);
+
     return (
-        <div style={{
-            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            minHeight: "100vh",
-            padding: "40px 20px"
-        }}>
-            {/* Header Section */}
-            <div style={{
-                textAlign: "center",
-                marginBottom: "40px",
-                color: "white"
-            }}>
-                <h1 style={{
-                    fontSize: "48px",
-                    fontWeight: "bold",
-                    margin: "0 0 15px 0",
-                    textShadow: "0 2px 10px rgba(0, 0, 0, 0.2)"
-                }}>
-                    🛡️ FraudShield AI Dashboard
-                </h1>
-                <p style={{
-                    fontSize: "18px",
-                    margin: "0",
-                    opacity: 0.9,
-                    fontWeight: "300"
-                }}>
-                    Real-Time Fraud Detection & Analysis
-                </p>
-            </div>
-
-            {/* Status Badge */}
-            <div style={{ textAlign: "center", marginBottom: "30px" }}>
-                <span style={{
-                    padding: "12px 24px",
-                    borderRadius: "50px",
-                    fontSize: "16px",
-                    fontWeight: "bold",
-                    backgroundColor: connectionStatus === "connected" ? "#28a745" : connectionStatus === "error" ? "#dc3545" : "#ffc107",
-                    color: connectionStatus === "connected" ? "white" : connectionStatus === "error" ? "white" : "#333",
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                    display: "inline-block",
-                    letterSpacing: "0.5px"
-                }}>
-                    {connectionStatus === "connected" ? "✓ Connected" : connectionStatus === "error" ? "✗ Connection Error" : "⟳ Connecting..."}
-                </span>
-            </div>
-
-            {/* Main Content Container */}
-            <div style={{
-                maxWidth: "1400px",
-                margin: "0 auto"
-            }}>
-                {/* Summary Cards Section */}
-                <div style={{
-                    backgroundColor: "white",
-                    borderRadius: "16px",
-                    padding: "40px 20px",
-                    marginBottom: "40px",
-                    boxShadow: "0 10px 40px rgba(0, 0, 0, 0.15)"
-                }}>
-                    <h2 style={{
-                        textAlign: "center",
-                        color: "#333",
-                        marginTop: "0",
-                        marginBottom: "30px",
-                        fontSize: "28px",
-                        fontWeight: "600"
-                    }}>
-                        Transaction Summary
-                    </h2>
-                    <FraudSummary alerts={alerts} />
+        <div className="app-shell">
+            <a className="skip-link" href="#main-content">Skip to content</a>
+            <aside className={`sidebar ${sidebarOpen ? "is-open" : ""}`} aria-label="Primary navigation">
+                <div className="brand">
+                    <span className="brand-mark"><Icon name="shield" size={22}/></span>
+                    <span><strong>FraudShield</strong><small>AI Command Center</small></span>
                 </div>
-
-                {/* Chart Section */}
-                <div style={{
-                    backgroundColor: "white",
-                    borderRadius: "16px",
-                    padding: "40px",
-                    boxShadow: "0 10px 40px rgba(0, 0, 0, 0.15)",
-                    display: "flex",
-                    justifyContent: "center"
-                }}>
-                    <FraudCharts data={chartData} />
+                <nav className="sidebar-nav">
+                    <p className="nav-label">Workspace</p>
+                    <a className="nav-item active" href="#overview"><Icon name="grid"/>Overview</a>
+                    <a className="nav-item" href="#live-feed"><Icon name="activity"/>Transactions</a>
+                    <a className="nav-item" href="#risk-analysis"><Icon name="alert"/>Risk analysis</a>
+                </nav>
+                <div className="sidebar-status">
+                    <span className={`status-orb ${connectionStatus}`}/>
+                    <span><strong>Detection engine</strong><small>{connectionStatus === "connected" ? "Monitoring live" : connectionStatus === "error" ? "Connection interrupted" : "Establishing link"}</small></span>
                 </div>
-            </div>
+                <div className="user-card">
+                    <span className="avatar">FS</span>
+                    <span><strong>Security Ops</strong><small>Administrator</small></span>
+                    <Icon name="chevron" size={16}/>
+                </div>
+            </aside>
+            {sidebarOpen && <button className="sidebar-scrim" aria-label="Close menu" onClick={() => setSidebarOpen(false)}/>}
 
+            <div className="app-body">
+                <header className="topbar">
+                    <button className="icon-button menu-button" aria-label="Open menu" onClick={() => setSidebarOpen(true)}><Icon name="menu"/></button>
+                    <div className="search-field" role="search">
+                        <Icon name="search" size={18}/>
+                        <label className="sr-only" htmlFor="global-search">Search transactions</label>
+                        <input id="global-search" placeholder="Search transaction ID, user…" />
+                        <kbd>⌘ K</kbd>
+                    </div>
+                    <div className="topbar-actions">
+                        <span className={`connection-badge ${connectionStatus}`}><i/>{connectionStatus === "connected" ? "Live" : connectionStatus === "error" ? "Offline" : "Connecting"}</span>
+                        <button className="icon-button notification-button" aria-label="Notifications"><Icon name="bell"/>{alerts.some((a) => a.isFraud) && <span className="notification-dot"/>}</button>
+                    </div>
+                </header>
+
+                <main id="main-content" className="main-content">
+                    <section className="page-heading" id="overview">
+                        <div>
+                            <p className="eyebrow">{dateLabel}</p>
+                            <h1>Fraud intelligence overview</h1>
+                            <p>Monitor transaction health and investigate emerging threats in real time.</p>
+                        </div>
+                        <div className="system-pill"><span className="pulse-dot"/><span><strong>System operational</strong><small>Live scoring enabled</small></span></div>
+                    </section>
+                    <FraudSummary alerts={alerts}/>
+                    <FraudCharts data={chartData}/>
+                    <FraudAlerts alerts={alerts}/>
+                    <footer>FraudShield AI <span>•</span> Real-time protection active</footer>
+                </main>
+            </div>
         </div>
     );
 }

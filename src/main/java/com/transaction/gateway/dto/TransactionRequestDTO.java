@@ -4,9 +4,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 // DTO for Client's request
 @Data
 public class TransactionRequestDTO {
+
+    @NotBlank
+    private String transactionId;
 
     @NotBlank
     private String userId;
@@ -22,4 +27,6 @@ public class TransactionRequestDTO {
 
     @NotBlank
     private String deviceId;
+
+    private LocalDateTime timestamp;
 }

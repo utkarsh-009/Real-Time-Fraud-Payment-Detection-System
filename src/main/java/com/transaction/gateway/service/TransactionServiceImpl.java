@@ -25,13 +25,15 @@ public class TransactionServiceImpl implements TransactionService{
     @Override
     public TransactionResponseDTO createTxn(TransactionRequestDTO txnReq) {
         Transaction txnResponse = Transaction.builder()
-                .txnId(UUID.randomUUID().toString())
+                .txnId(txnReq.getTransactionId() != null && !txnReq.getTransactionId().isBlank()
+                        ? txnReq.getTransactionId()
+                        : UUID.randomUUID().toString())
                 .userId(txnReq.getUserId())
                 .amount(txnReq.getAmount())
                 .merchant(txnReq.getMerchant())
                 .location(txnReq.getLocation())
                 .deviceId(txnReq.getDeviceId())
-                .createdDateTime(LocalDateTime.now())
+                .createdDateTime(txnReq.getTimestamp() != null ? txnReq.getTimestamp() : LocalDateTime.now())
                 .build();
 
         Transaction savedTxn = txnRepository.save(txnResponse);

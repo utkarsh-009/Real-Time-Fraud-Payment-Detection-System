@@ -2,9 +2,11 @@ from kafka import KafkaConsumer
 from kafka.errors import KafkaError
 import json
 import logging
+import os
 import time
 
 logger = logging.getLogger(__name__)
+bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 
 # Initialize Kafka Consumer with retry logic
 max_retries = 3
@@ -15,7 +17,7 @@ while retry_count < max_retries:
     try:
         consumer = KafkaConsumer(
             "transactions",
-            bootstrap_servers="localhost:9092",
+            bootstrap_servers=bootstrap_servers,
             value_deserializer=lambda x: json.loads(x.decode("utf-8")),
             auto_offset_reset='earliest',
             enable_auto_commit=True,

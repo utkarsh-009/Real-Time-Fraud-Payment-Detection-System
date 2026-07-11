@@ -32,7 +32,7 @@ try:
                 "transactionId": txn["transactionId"],
                 "userId": txn["userId"],
                 "riskScore": float(risk_score),
-                "isFraud": risk_score > 0.8
+                "isFraud": bool(risk_score > 0.8)
             }
             
             # Send prediction result
