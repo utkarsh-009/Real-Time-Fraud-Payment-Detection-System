@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">AI and Blockchain Powered Real-Time Fraud Detection System Architecture</title>
+  <desc id="desc">End-to-end architecture flow from payment request to Java backend, Kafka, Python machine learning fraud detection, WebSocket dashboard, PostgreSQL, Redis, and blockchain audit storage.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#334155"/>
+    </marker>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 15px Arial, sans-serif; fill: #475569; }
+      .box-title { font: 700 16px Arial, sans-serif; fill: #0f172a; }
+      .box-text { font: 400 12px Arial, sans-serif; fill: #475569; }
+      .small { font: 700 12px Arial, sans-serif; fill: #334155; }
+      .arrow-text { font: 600 12px Arial, sans-serif; fill: #334155; }
+      .box { stroke-width: 2; rx: 14; }
+      .line { stroke: #334155; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .line-soft { stroke: #64748b; stroke-width: 2; fill: none; marker-end: url(#arrow); stroke-dasharray: 6 6; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <text x="640" y="48" text-anchor="middle" class="title">AI + Blockchain Powered Real-Time Fraud Detection System</text>
+  <text x="640" y="75" text-anchor="middle" class="subtitle">Event-driven architecture using Spring Boot, Kafka, Python ML, WebSockets, PostgreSQL, Redis, Docker, and Blockchain</text>
+
+  <rect x="50" y="135" width="155" height="84" class="box" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="127.5" y="165" text-anchor="middle" class="box-title">User / Client</text>
+  <text x="127.5" y="188" text-anchor="middle" class="box-text">Payment request</text>
+  <text x="127.5" y="205" text-anchor="middle" class="box-text">JSON transaction</text>
+
+  <rect x="255" y="135" width="175" height="84" class="box" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="342.5" y="160" text-anchor="middle" class="box-title">API Gateway</text>
+  <text x="342.5" y="184" text-anchor="middle" class="box-text">Spring Boot REST API</text>
+  <text x="342.5" y="201" text-anchor="middle" class="box-text">Port 8081</text>
+
+  <rect x="480" y="135" width="190" height="84" class="box" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="575" y="160" text-anchor="middle" class="box-title">Transaction Service</text>
+  <text x="575" y="184" text-anchor="middle" class="box-text">Validate and persist</text>
+  <text x="575" y="201" text-anchor="middle" class="box-text">Create transaction event</text>
+
+  <rect x="720" y="135" width="175" height="84" class="box" fill="#fef3c7" stroke="#d97706"/>
+  <text x="807.5" y="160" text-anchor="middle" class="box-title">Kafka Topic</text>
+  <text x="807.5" y="184" text-anchor="middle" class="box-text">transactions</text>
+  <text x="807.5" y="201" text-anchor="middle" class="box-text">Async stream</text>
+
+  <rect x="945" y="135" width="215" height="84" class="box" fill="#fae8ff" stroke="#9333ea"/>
+  <text x="1052.5" y="160" text-anchor="middle" class="box-title">Fraud Detection ML</text>
+  <text x="1052.5" y="184" text-anchor="middle" class="box-text">Python service</text>
+  <text x="1052.5" y="201" text-anchor="middle" class="box-text">Feature engineering + model</text>
+
+  <rect x="945" y="330" width="215" height="84" class="box" fill="#fef3c7" stroke="#d97706"/>
+  <text x="1052.5" y="355" text-anchor="middle" class="box-title">Kafka Topic</text>
+  <text x="1052.5" y="379" text-anchor="middle" class="box-text">fraud-analysis</text>
+  <text x="1052.5" y="396" text-anchor="middle" class="box-text">Risk result event</text>
+
+  <rect x="665" y="330" width="220" height="84" class="box" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="775" y="355" text-anchor="middle" class="box-title">WebSocket Alert Service</text>
+  <text x="775" y="379" text-anchor="middle" class="box-text">Consumes fraud result</text>
+  <text x="775" y="396" text-anchor="middle" class="box-text">Publishes /topic/fraud-alerts</text>
+
+  <rect x="410" y="330" width="205" height="84" class="box" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="512.5" y="355" text-anchor="middle" class="box-title">React Dashboard</text>
+  <text x="512.5" y="379" text-anchor="middle" class="box-text">Live charts and alerts</text>
+  <text x="512.5" y="396" text-anchor="middle" class="box-text">WebSocket client</text>
+
+  <rect x="255" y="505" width="175" height="84" class="box" fill="#ecfccb" stroke="#65a30d"/>
+  <text x="342.5" y="530" text-anchor="middle" class="box-title">PostgreSQL</text>
+  <text x="342.5" y="554" text-anchor="middle" class="box-text">Transaction history</text>
+  <text x="342.5" y="571" text-anchor="middle" class="box-text">Risk score and status</text>
+
+  <rect x="520" y="505" width="175" height="84" class="box" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="607.5" y="530" text-anchor="middle" class="box-title">Redis Cache</text>
+  <text x="607.5" y="554" text-anchor="middle" class="box-text">Recent activity</text>
+  <text x="607.5" y="571" text-anchor="middle" class="box-text">Fast lookups</text>
+
+  <rect x="785" y="505" width="215" height="84" class="box" fill="#f1f5f9" stroke="#475569"/>
+  <text x="892.5" y="530" text-anchor="middle" class="box-title">Blockchain Audit</text>
+  <text x="892.5" y="554" text-anchor="middle" class="box-text">Critical fraud events</text>
+  <text x="892.5" y="571" text-anchor="middle" class="box-text">Tamper-proof history</text>
+
+  <path d="M205 177 H255" class="line"/>
+  <text x="230" y="166" text-anchor="middle" class="arrow-text">POST</text>
+
+  <path d="M430 177 H480" class="line"/>
+  <path d="M670 177 H720" class="line"/>
+  <path d="M895 177 H945" class="line"/>
+
+  <path d="M1052.5 219 V330" class="line"/>
+  <text x="1082" y="279" class="arrow-text">score</text>
+
+  <path d="M945 372 H885" class="line"/>
+  <path d="M665 372 H615" class="line"/>
+  <text x="640" y="361" text-anchor="middle" class="arrow-text">push</text>
+
+  <path d="M575 219 C575 280, 342.5 440, 342.5 505" class="line-soft"/>
+  <text x="406" y="461" class="small">store transaction</text>
+
+  <path d="M775 414 C775 455, 892.5 455, 892.5 505" class="line-soft"/>
+  <text x="842" y="468" class="small">critical fraud only</text>
+
+  <path d="M575 219 C620 285, 607.5 440, 607.5 505" class="line-soft"/>
+  <text x="626" y="461" class="small">cache metadata</text>
+
+  <rect x="50" y="640" width="1080" height="38" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="70" y="664" class="small">Main flow:</text>
+  <text x="145" y="664" class="box-text">Payment request -> Spring Boot API -> Kafka transactions -> Python ML fraud scoring -> Kafka fraud-analysis -> WebSocket -> React dashboard</text>
+</svg>
