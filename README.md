@@ -1,37 +1,199 @@
-# AI + Blockchain Powered Real-Time Fraud Detection System
+# Real-Time Fraud Payment Detection System
 
-## 1. Project Overview
+A real-time payment fraud detection project built with Spring Boot, Apache Kafka, PostgreSQL, Python machine learning, WebSockets, and a React dashboard.
 
-The **AI + Blockchain Powered Real-Time Fraud Detection System** is a real-time payment fraud detection platform. It receives payment transactions, processes them through a backend system, sends events through Kafka, analyzes fraud risk using a Python-based machine learning service, updates a live React dashboard using WebSockets, and stores critical fraud events on blockchain for tamper-proof audit history.
+The system accepts payment transactions, stores them in PostgreSQL, publishes them to Kafka, analyzes fraud risk through a Python prediction engine, and streams fraud alerts to the dashboard in real time.
 
-This project is useful because payment fraud needs to be detected quickly. A delayed fraud response can lead to financial loss, poor customer experience, and weak audit traceability.
+## Architecture
 
-## 2. Problem Statement
+```text
+Client / API Tool
+      |
+      v
+Spring Boot Transaction API
+      |
+      | stores transaction
+      v
+PostgreSQL
+      |
+      | publishes event
+      v
+Kafka topic: transactions
+      |
+      v
+Python Fraud Prediction Engine
+      |
+      | publishes prediction
+      v
+Kafka topic: fraud-analysis
+      |
+      v
+Spring Boot Fraud Alert Consumer
+      |
+      | WebSocket / STOMP
+      v
+React Fraud Dashboard
+```
 
-Digital payment systems process large numbers of transactions every second. Some transactions may be fraudulent due to unusual amount, suspicious location, unknown device, risky merchant, or abnormal user behavior.
+The visual architecture diagram is available at:
 
-Traditional manual fraud detection is slow because:
+![System Architecture Flow](docs/system-architecture-flow.svg)
 
-- Humans cannot review every transaction in real time.
-- Fraud patterns change quickly.
-- Manual checks can delay genuine payments.
-- Audit records can be modified if they are stored only in centralized systems.
+## Tech Stack
 
-## 3. Solution
+| Layer | Technology |
+| --- | --- |
+| Backend API | Java 21, Spring Boot 3.5 |
+| Messaging | Apache Kafka, Zookeeper |
+| Database | PostgreSQL 16 |
+| ML service | Python, scikit-learn, Kafka Python client |
+| Frontend | React, Vite, Recharts |
+| Real-time alerts | WebSocket, STOMP, SockJS |
+| Local infrastructure | Docker Compose |
 
-This system solves the problem using a real-time, event-driven architecture.
+## Project Structure
 
-- **Spring Boot APIs** receive and validate transactions.
-- **Apache Kafka** streams transaction events asynchronously.
-- **Python ML service** predicts fraud probability and generates a risk score.
-- **WebSockets** push live fraud alerts to the dashboard.
-- **PostgreSQL** stores transaction history.
-- **Blockchain** stores critical fraud events as tamper-proof audit records.
-- **Docker** helps run infrastructure services consistently.
+```text
+.
++-- src/main/java/com/transaction
+|   +-- gateway          # Transaction REST API Gateway
+|   +-- analysis         # Consumes prediction engine's results to publish it to dashboard using WebSockets
++-- src/main/resources
+|   +-- application.yml  # Spring Boot runtime configuration
+|   +-- docker-compose.yml
++-- fraud txn prediction engine
+|   +-- app              # Python Kafka consumer, prediction pipeline, producer
+|   +-- train_model.py   # Synthetic model training script
+|   +-- requirements.txt
++-- fraud-txn-dashboard  # React + Vite dashboard
+```
 
-## 4. End-to-End Flow
+## Main Components
 
-Sample transaction:
+### Spring Boot Backend
+
+Runs on `http://localhost:8081`.
+
+Responsibilities:
+
+- Exposes transaction REST APIs.
+- Stores transaction records in PostgreSQL.
+- Publishes transaction events to Kafka topic `transactions`.
+- Consumes fraud results from Kafka topic `fraud-analysis`.
+- Pushes fraud alerts to dashboard clients through `/ws-alerts`.
+
+### Python Fraud Prediction Engine
+
+Located in `fraud txn prediction engine`.
+
+Responsibilities:
+
+- Consumes transaction events from Kafka topic `transactions`.
+- Extracts fraud features such as high amount, night transaction, risky location, and new device.
+- Runs the trained model prediction.
+- Publishes fraud results to Kafka topic `fraud-analysis`.
+
+### React Dashboard
+
+Located in `fraud-txn-dashboard`.
+
+Responsibilities:
+
+- Connects to `http://localhost:8081/ws-alerts`.
+- Subscribes to `/topic/fraud-alerts`.
+- Displays fraud alerts, summaries, and charts in real time.
+
+## Prerequisites
+
+Install these before running the project:
+
+- Java 21
+- Maven
+- Python 3.10 or later
+- Node.js and npm
+- Docker Desktop
+
+## Local Setup
+
+### 1. Start Kafka, Zookeeper, and PostgreSQL
+
+From the project root:
+
+```bash
+docker compose -f src/main/resources/docker-compose.yml up -d
+```
+
+This starts:
+
+- Kafka on `localhost:9092`
+- Zookeeper on `localhost:2181`
+- PostgreSQL on `localhost:5431`
+
+Database credentials from `application.yml`:
+
+```text
+Database: fraud_txns_detection
+Username: postgres
+Password: password
+```
+
+### 2. Start the Spring Boot backend
+
+From the project root:
+
+```bash
+mvn spring-boot:run
+```
+
+Backend URL:
+
+```text
+http://localhost:8081
+```
+
+Swagger UI:
+
+```text
+http://localhost:8081/swagger-ui/index.html
+```
+
+### 3. Set up and run the Python fraud engine
+
+From the ML service folder:
+
+```bash
+cd "fraud txn prediction engine"
+pip install -r requirements.txt
+python train_model.py
+python app/main.py
+```
+
+The engine listens to `transactions` and publishes predictions to `fraud-analysis`.
+
+### 4. Start the React dashboard
+
+From the dashboard folder:
+
+```bash
+cd fraud-txn-dashboard
+npm install
+npm run dev
+```
+
+Vite will print the local dashboard URL, usually:
+
+```text
+http://localhost:5173
+```
+
+## API Usage
+
+### Create a transaction
+
+```http
+POST http://localhost:8081/api/v1/transactions
+Content-Type: application/json
+```
 
 ```json
 {
@@ -40,201 +202,81 @@ Sample transaction:
   "amount": 120000,
   "merchant": "Amazon",
   "location": "Russia",
-  "deviceId": "DEV999",
+  "deviceId": "NEW-DEVICE-999",
   "timestamp": "2026-05-17T10:15:00"
 }
 ```
 
-Complete flow:
+The backend stores the transaction and publishes this event to Kafka. The Python service then returns a fraud analysis event like:
 
-1. User makes a payment.
-2. API Gateway receives the transaction request.
-3. Transaction Service validates the transaction data.
-4. Transaction Service stores the transaction in PostgreSQL.
-5. Kafka Producer publishes the transaction event to a Kafka topic.
-6. Fraud Detection ML Service consumes the Kafka event.
-7. ML model analyzes amount, merchant, location, device ID, timestamp, and risk patterns.
-8. Risk score is generated.
-9. Fraud result is published back to Kafka.
-10. WebSocket Alert Service consumes the fraud result.
-11. React Dashboard receives the alert through WebSocket.
-12. Dashboard updates transaction status, fraud score, and alert charts in real time.
-13. Critical fraud events are stored on blockchain for audit history.
-14. PostgreSQL keeps transaction and fraud history for reporting and lookup.
+```json
+{
+  "transactionId": "TXN1001",
+  "userId": "USER101",
+  "riskScore": 0.85,
+  "isFraud": true
+}
+```
 
-## 5. Microservices / Components
+### Get all transactions
 
-### API Gateway
+```http
+GET http://localhost:8081/api/v1/transactions
+```
 
-Receives transaction requests from users or payment clients and exposes REST APIs for the system.
+### Get a transaction by database ID
 
-### Transaction Service
+```http
+GET http://localhost:8081/api/v1/transactions/{id}
+```
 
-Validates transaction details, stores records in PostgreSQL, and prepares transaction events for Kafka.
+## Kafka Topics
 
-### Kafka Producer
+| Topic | Producer | Consumer | Purpose |
+| --- | --- | --- | --- |
+| `transactions` | Spring Boot backend | Python fraud engine | Carries new transaction events |
+| `fraud-analysis` | Python fraud engine | Spring Boot alert consumer | Carries fraud prediction results |
 
-Publishes transaction events to Kafka so other services can process them asynchronously.
+## Fraud Features
 
-### Kafka Consumer
+The current ML engine converts each transaction into risk signals. Each signal can increase the final `riskScore`; the model treats transactions with multiple risk signals as more suspicious than transactions with only one weak signal.
 
-Consumes Kafka events from topics such as transaction events and fraud analysis results.
+| Feature | How it affects risk score |
+| --- | --- |
+| Transaction amount | Higher amounts increase risk because large fraudulent payments create more financial exposure. The engine also uses `amount_log` so very large values are handled more smoothly. |
+| High amount flag | Amounts above `50000` add a risk signal. This does not automatically mean fraud, but it raises suspicion when combined with other signals. |
+| Very high amount flag | Amounts above `100000` add a stronger risk signal than normal high-value transactions. |
+| Night-time transaction flag | Transactions between midnight and early morning are treated as riskier because unusual payment times can indicate account misuse. |
+| Location risk flag | Transactions outside the configured safe locations increase risk. Safe locations currently include Mumbai, Delhi, Bangalore, Hyderabad, Chennai, and Pune. |
+| High-risk location flag | Locations such as Russia, Nigeria, North Korea, Iran, or Unknown add a stronger risk signal. |
+| New device flag | Device IDs that start with `NEW` or end with `999` increase risk because unfamiliar devices are often suspicious. |
+| Risky merchant flag | Merchant names containing keywords such as `crypto`, `gift`, `betting`, `casino`, or `wire` increase risk. |
+| Risk factor count | The engine counts how many suspicious signals are present. More combined signals usually push the prediction closer to fraud. |
 
-### Fraud Detection ML Service
+Some combinations increase risk further. For example, a very high amount from a high-risk location, a high amount from a new device, or a night transaction from a risky location will generally receive a higher `riskScore` than any one of those signals alone.
 
-A Python-based service that reads transaction events, applies feature engineering, runs the ML model, and predicts fraud probability.
+The model is trained with synthetic data using `train_model.py`. This makes the project easy to run locally, but production use would require real historical data, stronger validation, monitoring, retraining, and model governance.
 
-### PostgreSQL Database
+## Real-Time Alert Flow
 
-Stores transaction records, fraud status, risk scores, timestamps, user metadata, and payment metadata.
+1. Dashboard connects to `http://localhost:8081/ws-alerts`.
+2. Dashboard subscribes to `/topic/fraud-alerts`.
+3. Spring Boot consumes `fraud-analysis` events from Kafka.
+4. Spring Boot publishes each fraud result to connected dashboard clients.
+5. React updates alerts, summaries, and charts without polling.
 
-### Redis Cache
 
-Can be used to cache recent transaction activity, device usage, user risk profiles, and frequently accessed fraud metadata.
+## Future Enhancements
 
-### WebSocket Alert Service
-
-Pushes fraud detection results to connected dashboard clients in real time.
-
-### React Dashboard
-
-Displays live transaction alerts, fraud scores, status summaries, and charts.
-
-### Blockchain Audit Service
-
-Stores only critical fraud events on blockchain to maintain a tamper-proof audit trail.
-
-## 6. Architecture Explanation
-
-The system follows an **event-driven architecture** using Apache Kafka.
-
-Instead of every service directly calling another service, services communicate through events. When a transaction is created, it is published to Kafka. The fraud detection service consumes that event, processes it independently, and publishes a fraud result event. This makes the system scalable, loosely coupled, and suitable for real-time processing.
-
-### System Architecture Flow
-
-![System Architecture Flow](docs/system-architecture-flow.svg)
-
-## 7. Why Kafka is Used
-
-Kafka is used as the real-time event streaming layer.
-
-Kafka helps with:
-
-- **Asynchronous communication** between backend and ML services.
-- **Scalability**, because multiple consumers can process events.
-- **Fault tolerance**, because events can be retained and replayed.
-- **Real-time streaming**, which is important for fast fraud detection.
-- **Loose coupling**, so services do not depend directly on each other.
-
-## 8. Why Machine Learning is Used
-
-Machine learning helps detect suspicious transactions automatically.
-
-The ML model can analyze features such as:
-
-- Transaction amount
-- Merchant
-- Location
-- Device ID
-- Timestamp
-- User behavior patterns
-
-Based on these features, the model generates a fraud risk score. Higher scores indicate more suspicious transactions.
-
-## 9. Why Blockchain is Used
-
-Blockchain is used only for **critical fraud events**, not for every transaction.
-
-This keeps the system efficient while still providing strong audit protection. Once a critical fraud record is written to blockchain, it becomes difficult to modify or delete. This helps with compliance, investigation, and fraud audit history.
-
-## 10. Database Design
-
-PostgreSQL stores the main transaction and fraud records.
-
-Typical stored data includes:
-
-- Transaction ID
-- User ID
-- Amount
-- Merchant
-- Location
-- Device ID
-- Timestamp
-- Fraud status
-- Risk score
-- Created and updated timestamps
-- User and payment metadata
-
-## 11. Real-Time Dashboard
-
-The React dashboard receives live fraud alerts using WebSockets.
-
-It can display:
-
-- Transaction ID
-- User ID
-- Fraud score
-- Fraud or safe status
-- Live alert list
-- Risk score chart
-- Summary of safe and suspicious transactions
-
-WebSockets are used because they allow the backend to push updates instantly without requiring the frontend to repeatedly call APIs.
-
-## 12. Docker Setup
-
-Docker is used to run infrastructure and services in isolated containers.
-
-Common Dockerized services include:
-
-- Kafka
-- Zookeeper
-- PostgreSQL
-- Redis
-- Fraud Detection ML Service
-- Other backend services
-
-Docker makes the setup easier to run across different machines and avoids environment mismatch issues.
-
-## 13. Key Features
-
-- Real-time transaction processing
-- Kafka-based event streaming
-- ML-based fraud prediction
-- WebSocket live alerts
-- PostgreSQL transaction storage
-- Blockchain-based fraud audit
-- Scalable microservice architecture
-- Dockerized setup
-
-## 14. Learning Outcomes
-
-This project demonstrates practical skills in:
-
-- Backend development
-- Microservices
-- Apache Kafka
-- Real-time systems
-- Machine learning integration
-- Database design
-- WebSocket communication
-- Docker
-- Blockchain basics
-- System design
-
-## 15. Future Enhancements
-
-Possible future improvements:
-
-- JWT authentication
+- Authentication and role-based access
 - API rate limiting
-- Admin dashboard
-- Advanced ML model
-- Model retraining pipeline
+- More realistic fraud training data
+- Model metrics and retraining pipeline
+- Blockchain audit service implementation for critical fraud events
+- Prometheus and Grafana monitoring
 - Kubernetes deployment
-- Cloud deployment
-- Monitoring with Prometheus and Grafana
+- Cloud deployment pipeline
 
 ## Summary
 
-This project combines backend engineering, real-time streaming, machine learning, dashboard visualization, database storage, and blockchain audit logging into one end-to-end fraud detection system. It is designed to detect suspicious transactions quickly, alert users in real time, and preserve critical fraud records securely.
+This project demonstrates an end-to-end fraud detection workflow using event-driven architecture. It combines transaction APIs, Kafka streaming, ML-based risk scoring, persistent storage, and live dashboard alerts into one real-time system.
